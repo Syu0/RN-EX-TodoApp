@@ -341,3 +341,4 @@ google-services.json
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/reactnative
+__tests__/RN-EX-TodoApp/
