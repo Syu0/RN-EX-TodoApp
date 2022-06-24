@@ -7,7 +7,7 @@
  */
 
 import React, {useState} from 'react';
-import type {Node} from 'react';
+import {useEffect} from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -17,11 +17,16 @@ import {
   TextInput,
   useColorScheme,
   ScrollView,
+  Alert,
   TouchableOpacity,
 } from 'react-native';
 import {theme} from './colors.js';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {} from 'react';
+import {loadOptions} from '@babel/core';
+
+const STORIGE_KEY_TODOS = '@toDos';
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -30,11 +35,26 @@ const App: () => Node = () => {
   const work = () => setWorking(true);
   const travel = () => setWorking(false);
   const [Todos, setTodos] = useState({});
-
   const onChangeText = payload => {
     setText(payload);
   };
-  const addTodo = () => {
+  const saveTodos = async toSave => {
+    await AsyncStorage.setItem(STORIGE_KEY_TODOS, JSON.stringify(toSave));
+  };
+  const loadToDos = async () => {
+    try {
+      const s = await AsyncStorage.getItem(STORIGE_KEY_TODOS);
+      setTodos(JSON.parse(s))
+      console.log(JSON.parse(s));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    loadToDos();
+  }, []);
+
+  const addTodo = async () => {
     if (text === '') {
       return;
     }
@@ -42,8 +62,29 @@ const App: () => Node = () => {
       [Date.now()]: {text: text, working: working},
     });
     setTodos(newTodos);
+    await saveTodos(newTodos);
     setText('');
     console.log(newTodos);
+  };
+
+  const deleteTodo = async id => {
+    Alert.alert('Are you sure?', 'Delete this job.', [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {
+        text: 'OK',
+        onPress: async () => {
+          const newTodos = Object.assign({}, Todos);
+          delete newTodos[id];
+
+          setTodos(newTodos);
+          await saveTodos(newTodos);
+        },
+      },
+    ]);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -82,6 +123,12 @@ const App: () => Node = () => {
           working === Todos[key].working ? (
             <View key={key} style={styles.todo}>
               <Text style={styles.todoText}>{Todos[key].text}</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  deleteTodo(key);
+                }}>
+                <Text>💥</Text>
+              </TouchableOpacity>
             </View>
           ) : null,
         )}
@@ -121,6 +168,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 15,
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'space-between',
   },
   todoText: {
     color: 'white',
