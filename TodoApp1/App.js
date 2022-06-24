@@ -27,6 +27,7 @@ import {} from 'react';
 import {loadOptions} from '@babel/core';
 
 const STORIGE_KEY_TODOS = '@toDos';
+const WORK_MODE = '@working';
 
 const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -44,22 +45,19 @@ const App: () => Node = () => {
   const loadToDos = async () => {
     try {
       const s = await AsyncStorage.getItem(STORIGE_KEY_TODOS);
-      setTodos(JSON.parse(s))
+      setTodos(JSON.parse(s));
       console.log(JSON.parse(s));
     } catch (error) {
       console.log(error);
     }
   };
-  useEffect(() => {
-    loadToDos();
-  }, []);
 
   const addTodo = async () => {
     if (text === '') {
       return;
     }
     const newTodos = Object.assign({}, Todos, {
-      [Date.now()]: {text: text, working: working},
+      [Date.now()]: {text: text, working: working, done: false},
     });
     setTodos(newTodos);
     await saveTodos(newTodos);
@@ -86,11 +84,52 @@ const App: () => Node = () => {
       },
     ]);
   };
+
+  const initMode = async () => {
+    const mode = await AsyncStorage.getItem(WORK_MODE);
+    if (mode === 'work') {
+      work();
+    } else {
+      travel();
+    }
+  };
+
+  const saveMode = async mode => {
+    await AsyncStorage.setItem(WORK_MODE, mode);
+    console.log('now , ', mode);
+  };
+
+  const setMode = async mode => {
+    if (mode === 'work') {
+      work();
+    } else {
+      travel();
+    }
+    await saveMode(mode);
+  };
+
+  const doneTodo = async id => {
+    const newTodos = Object.assign({}, Todos);
+    newTodos[id].done = true;
+
+    console.log('done , ', newTodos[id]);
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
+
+  useEffect(() => {
+    initMode();
+    loadToDos();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="auto" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={work}>
+        <TouchableOpacity
+          onPress={() => {
+            setMode('work');
+          }}>
           <Text
             style={{
               ...styles.btnText,
@@ -99,7 +138,10 @@ const App: () => Node = () => {
             Work
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={travel}>
+        <TouchableOpacity
+          onPress={() => {
+            setMode('travel');
+          }}>
           <Text
             style={{
               ...styles.btnText,
@@ -121,15 +163,50 @@ const App: () => Node = () => {
       <ScrollView>
         {Object.keys(Todos).map(key =>
           working === Todos[key].working ? (
-            <View key={key} style={styles.todo}>
-              <Text style={styles.todoText}>{Todos[key].text}</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  deleteTodo(key);
-                }}>
-                <Text>💥</Text>
-              </TouchableOpacity>
-            </View>
+            Todos[key].done != true ? (
+              <View key={key} style={styles.todo}>
+                <Text style={styles.todoText}>{Todos[key].text}</Text>
+                <View style={styles.btns}>
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() => {
+                      doneTodo(key);
+                    }}>
+                    <Text>✔</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() => {
+                      deleteTodo(key);
+                    }}>
+                    <Text>💥</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : null
+          ) : null,
+        )}
+        {Object.keys(Todos).map(key =>
+          working === Todos[key].working ? (
+            Todos[key].done === true ? (
+              <View key={key} style={styles.doneTodo}>
+                <Text style={styles.doneTodoText}>{Todos[key].text}</Text>
+                <View style={styles.btns}>
+                  <TouchableOpacity style={styles.btn}>
+                    <Text>💦</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() => {
+                      deleteTodo(key);
+                    }}>
+                    <Text>💥</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : null
           ) : null,
         )}
       </ScrollView>
@@ -144,6 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+  },
+  btns: {
+    flexDirection: 'row',
+  },
+  btn: {
+    marginRight: 5,
   },
   btnText: {
     fontSize: 38,
@@ -171,6 +254,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignContent: 'center',
     justifyContent: 'space-between',
+  },
+  doneTodo: {
+    backgroundColor: theme.grey,
+
+    marginBottom: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'space-between',
+  },
+  doneTodoText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: '500',
   },
   todoText: {
     color: 'white',
