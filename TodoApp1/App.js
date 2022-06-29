@@ -25,6 +25,7 @@ import {theme} from './colors.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {} from 'react';
 import {loadOptions} from '@babel/core';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const STORIGE_KEY_TODOS = '@toDos';
 const WORK_MODE = '@working';
@@ -107,12 +108,12 @@ const App: () => Node = () => {
     }
     await saveMode(mode);
   };
-
+  
   const doneTodo = async id => {
     const newTodos = Object.assign({}, Todos);
     newTodos[id].done = true;
-
     console.log('done , ', newTodos[id]);
+
     setTodos(newTodos);
     await saveTodos(newTodos);
   };
@@ -122,6 +123,14 @@ const App: () => Node = () => {
     loadToDos();
   }, []);
 
+  const notDone = async id => {
+    const newTodos = Object.assign({}, Todos);
+    newTodos[id].done = false;
+    console.log('not done , ', newTodos[id]);
+
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="auto" />
@@ -165,22 +174,23 @@ const App: () => Node = () => {
           working === Todos[key].working ? (
             Todos[key].done != true ? (
               <View key={key} style={styles.todo}>
-                <Text style={styles.todoText}>{Todos[key].text}</Text>
                 <View style={styles.btns}>
                   <TouchableOpacity
                     style={styles.btn}
                     onPress={() => {
                       doneTodo(key);
                     }}>
-                    <Text>✔</Text>
+                    <Text>⚪</Text>
                   </TouchableOpacity>
-
+                  <Text style={styles.todoText}>{Todos[key].text}</Text>
+                </View>
+                <View style={styles.btns}>
                   <TouchableOpacity
                     style={styles.btn}
                     onPress={() => {
                       deleteTodo(key);
                     }}>
-                    <Text>💥</Text>
+                    <Icon name="trash" size={20} color="#4a8bfc" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -191,18 +201,23 @@ const App: () => Node = () => {
           working === Todos[key].working ? (
             Todos[key].done === true ? (
               <View key={key} style={styles.doneTodo}>
-                <Text style={styles.doneTodoText}>{Todos[key].text}</Text>
                 <View style={styles.btns}>
-                  <TouchableOpacity style={styles.btn}>
-                    <Text>💦</Text>
+                <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() => {
+                      notDone(key);
+                    }}>
+                    <Text>🔘</Text>
                   </TouchableOpacity>
-
+                  <Text style={styles.doneTodoText}>{Todos[key].text}</Text>
+                </View>
+                <View style={styles.btns}>
                   <TouchableOpacity
                     style={styles.btn}
                     onPress={() => {
                       deleteTodo(key);
                     }}>
-                    <Text>💥</Text>
+                    <Icon name="trash" size={20} color="#4a8bfc" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -257,7 +272,6 @@ const styles = StyleSheet.create({
   },
   doneTodo: {
     backgroundColor: theme.grey,
-
     marginBottom: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
