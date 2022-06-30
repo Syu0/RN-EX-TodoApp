@@ -108,7 +108,7 @@ const App: () => Node = () => {
     }
     await saveMode(mode);
   };
-  
+
   const doneTodo = async id => {
     const newTodos = Object.assign({}, Todos);
     newTodos[id].done = true;
@@ -174,25 +174,24 @@ const App: () => Node = () => {
           working === Todos[key].working ? (
             Todos[key].done != true ? (
               <View key={key} style={styles.todo}>
-                <View style={styles.btns}>
-                  <TouchableOpacity
-                    style={styles.btn}
-                    onPress={() => {
-                      doneTodo(key);
-                    }}>
-                    <Text>⚪</Text>
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.btns}
+                  onPress={() => {
+                    doneTodo(key);
+                  }}>
+                  <Text>⚪</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.textarea}>
                   <Text style={styles.todoText}>{Todos[key].text}</Text>
-                </View>
-                <View style={styles.btns}>
-                  <TouchableOpacity
-                    style={styles.btn}
-                    onPress={() => {
-                      deleteTodo(key);
-                    }}>
-                    <Icon name="trash" size={20} color="#4a8bfc" />
-                  </TouchableOpacity>
-                </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.btns}
+                  onPress={() => {
+                    deleteTodo(key);
+                  }}>
+                  <Icon name="trash" size={20} color="#4a8bfc" />
+                </TouchableOpacity>
               </View>
             ) : null
           ) : null,
@@ -201,19 +200,19 @@ const App: () => Node = () => {
           working === Todos[key].working ? (
             Todos[key].done === true ? (
               <View key={key} style={styles.doneTodo}>
-                <View style={styles.btns}>
                 <TouchableOpacity
-                    style={styles.btn}
-                    onPress={() => {
-                      notDone(key);
-                    }}>
-                    <Text>🔘</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.doneTodoText}>{Todos[key].text}</Text>
-                </View>
+                  style={styles.btns}
+                  onPress={() => {
+                    notDone(key);
+                  }}>
+                  <Text>🔘</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.doneTodoTextArea}>
+                  <Text>{Todos[key].text}</Text>
+                </TouchableOpacity>
+
                 <View style={styles.btns}>
                   <TouchableOpacity
-                    style={styles.btn}
                     onPress={() => {
                       deleteTodo(key);
                     }}>
@@ -239,13 +238,15 @@ const styles = StyleSheet.create({
   },
   btns: {
     flexDirection: 'row',
-  },
-  btn: {
-    marginRight: 5,
+    alignContent: 'flex-end',
+    flex: 1,
   },
   btnText: {
     fontSize: 38,
     fontWeight: '600',
+  },
+  textarea: {
+    flex: 7,
   },
   highlight: {
     fontWeight: '700',
@@ -261,14 +262,12 @@ const styles = StyleSheet.create({
   },
   todo: {
     backgroundColor: theme.todobg,
-
     marginBottom: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 15,
     flexDirection: 'row',
-    alignContent: 'center',
-    justifyContent: 'space-between',
+    alignContent: 'flex-start',
   },
   doneTodo: {
     backgroundColor: theme.grey,
@@ -277,18 +276,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 15,
     flexDirection: 'row',
-    alignContent: 'center',
-    justifyContent: 'space-between',
+    alignContent: 'flex-start',
+  },
+  doneTodoTextArea: {
+    flex: 7,
+    flexDirection: 'row',
+    alignContent: 'flex-start',
   },
   doneTodoText: {
+    flex: 1,
     color: 'black',
     fontSize: 16,
     fontWeight: '500',
   },
   todoText: {
+    flex: 1,
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  btn: {
+    marginRight: 5,
+    flex: 1,
   },
 });
 
