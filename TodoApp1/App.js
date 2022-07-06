@@ -34,6 +34,7 @@ const App: () => Node = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const [working, setWorking] = useState(false);
   const [text, setText] = useState('');
+  const [done, setDone] = useState('');
   const work = () => setWorking(true);
   const travel = () => setWorking(false);
   const [Todos, setTodos] = useState({});
@@ -118,11 +119,6 @@ const App: () => Node = () => {
     await saveTodos(newTodos);
   };
 
-  useEffect(() => {
-    initMode();
-    loadToDos();
-  }, []);
-
   const notDone = async id => {
     const newTodos = Object.assign({}, Todos);
     newTodos[id].done = false;
@@ -131,6 +127,22 @@ const App: () => Node = () => {
     setTodos(newTodos);
     await saveTodos(newTodos);
   };
+
+  const editTodo = id => {
+    console.log(Todos[id].text);
+    return (
+      <TextInput
+        style={styles.input}
+        onChangeText={onChangeText}
+        value={Todos[id].text}
+      />
+    );
+  };
+
+  useEffect(() => {
+    initMode();
+    loadToDos();
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="auto" />
@@ -181,7 +193,11 @@ const App: () => Node = () => {
                   }}>
                   <Text>⚪</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.textarea}>
+                <TouchableOpacity
+                  style={styles.textarea}
+                  onPress={() => {
+                    editTodo(key);
+                  }}>
                   <Text style={styles.todoText}>{Todos[key].text}</Text>
                 </TouchableOpacity>
 
