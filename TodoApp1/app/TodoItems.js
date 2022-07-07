@@ -1,5 +1,11 @@
 import React from 'react';
-import {Text, View, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import {theme} from '../colors.js';
@@ -28,11 +34,15 @@ const getVisibleTodos = (todos, type, working) => {
   todos = newTodos;
   return todos;
 };
+
 const TodoItems = ({
   Todos,
   toggleTodo,
   editTodo,
+  setEditMode,
+  onEditingText,
   deleteTodo,
+  editCancel,
   type,
   working,
 }) => {
@@ -48,21 +58,38 @@ const TodoItems = ({
         }}>
         {Todos[key].done != true ? <Text>⚪</Text> : <Text>🔘</Text>}
       </TouchableOpacity>
-      <TouchableOpacity
-        style={
-          Todos[key].done != true ? styles.textarea : styles.doneTodoTextArea
-        }
-        onPress={() => {
-          editTodo(key);
-        }}>
-        <Text
+      {Todos[key].editMode ? (
+        <View style={styles.textarea}>
+          <TextInput
+            style={styles.editTodo}
+            onChangeText={onEditingText}
+            selectionColor={theme.lightbg}
+            placeholder={Todos[key].text}
+            autoFocus={true}
+            onBlur={() => {
+              editCancel(key);
+            }}
+            onSubmitEditing={() => {
+              editTodo(key);
+            }}
+          />
+        </View>
+      ) : (
+        <TouchableOpacity
           style={
-            Todos[key].done != true ? styles.todoText : styles.doneTodoText
-          }>
-          {Todos[key].text}
-        </Text>
-      </TouchableOpacity>
-
+            Todos[key].done != true ? styles.textarea : styles.doneTodoTextArea
+          }
+          onPress={() => {
+            setEditMode(key);
+          }}>
+          <Text
+            style={
+              Todos[key].done != true ? styles.todoText : styles.doneTodoText
+            }>
+            {Todos[key].text}
+          </Text>
+        </TouchableOpacity>
+      )}
       <TouchableOpacity
         style={styles.btns}
         onPress={() => {
@@ -125,6 +152,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  editTodo: {
+    flex: 1,
+    backgroundColor: theme.todobg,
+    color: 'white',
+    padding: 0,
+    margin: 0,
+    fontSize: 16,
+    fontWeight: '500',
+    height: 23,
+    width: 200,
   },
   btn: {
     marginRight: 5,

@@ -31,12 +31,17 @@ const App: () => Node = () => {
   const [working, setWorking] = useState(false);
   const [text, setText] = useState('');
   const [type, setType] = useState('Active');
+  const [editText, setEditText] = useState('');
   const work = () => setWorking(true);
   const travel = () => setWorking(false);
   const [Todos, setTodos] = useState({});
 
   const onChangeText = payload => {
     setText(payload);
+  };
+
+  const onEditingText = payload => {
+    setEditText(payload);
   };
 
   const saveTodos = async toSave => {
@@ -58,7 +63,12 @@ const App: () => Node = () => {
       return;
     }
     const newTodos = Object.assign({}, Todos, {
-      [Date.now()]: {text: text, working: working, done: false},
+      [Date.now()]: {
+        text: text,
+        working: working,
+        done: false,
+        editMode: false,
+      },
     });
     setTodos(newTodos);
     await saveTodos(newTodos);
@@ -95,6 +105,20 @@ const App: () => Node = () => {
     ]);
   };
 
+  const editCancel = async id => {
+    const newTodos = Object.assign({}, Todos);
+    newTodos[id].editMode = !newTodos[id].editMode;
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
+
+  const editTodo = async id => {
+    const newTodos = Object.assign({}, Todos);
+    newTodos[id].text = editText;
+    setTodos(newTodos);
+    await saveTodos(newTodos);
+  };
+
   const initMode = async () => {
     const mode = await AsyncStorage.getItem(WORK_MODE);
     if (mode === 'work') {
@@ -118,15 +142,12 @@ const App: () => Node = () => {
     await saveMode(mode);
   };
 
-  const editTodo = id => {
+  const setEditMode = async id => {
     console.log(Todos[id].text);
-    return (
-      <TextInput
-        style={styles.input}
-        onChangeText={onChangeText}
-        value={Todos[id].text}
-      />
-    );
+    const newTodos = Object.assign({}, Todos);
+    newTodos[id].editMode = true;
+    setTodos(newTodos);
+    await saveTodos(newTodos);
   };
 
   useEffect(() => {
@@ -150,8 +171,11 @@ const App: () => Node = () => {
       <Todo
         Todos={Todos}
         toggleTodo={toggleTodo}
+        setEditMode={setEditMode}
         editTodo={editTodo}
+        onEditingText={onEditingText}
         deleteTodo={deleteTodo}
+        editCancel={editCancel}
         type={type}
         working={working}
       />
